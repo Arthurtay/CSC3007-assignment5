@@ -1,0 +1,164 @@
+<head>
+    
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.css" />
+    <title>Document</title>
+    
+     
+
+
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    
+        <!-- Compiled and minified JavaScript -->
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Ranchers&display=swap" rel="stylesheet">
+    <script>
+    var labelsAge = ["< 25 ",
+                    "25 - 50",
+                    "50 - 75",
+                    " 75-90 ",
+                    " > 90"]
+    let colorScaleAge = d3.scaleSequential()
+    .domain([15,50])
+    .interpolator(d3.interpolateRdPu);
+    
+    $( document ).ready(function() {
+        fetch(' https://api.data.gov.sg/v1/environment/psi')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            console.log(data.region_metadata)
+            var region = data.region_metadata
+            console.log(data.items[0].readings.psi_twenty_four_hourly)
+            var psi_24 = data.items[0].readings.psi_twenty_four_hourly
+
+            var environment = data.items[0].readings.psi_twenty_four_hourly
+            let table = document.getElementById("example");
+
+
+            let tiles = new L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
+            detectRetina: true,
+            maxZoom: 30,
+            minZoom: 8,
+            //Do not remove this attribution
+            attribution: '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+                        'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>'
+            });
+
+            let map = new L.Map("map", {
+                center: [1.347833, 103.809357], 
+                zoom: 11,
+                maxBounds: L.latLngBounds(L.latLng(1.1, 103.5), L.latLng(1.5, 104.3))
+                })
+                .addLayer(tiles);
+            
+                for(var item in data.region_metadata){
+
+                    console.log(data.region_metadata[item].name)
+                    console.log(data.region_metadata[item].label_location)
+                    var name = data.region_metadata[item].name
+                    var psi_val = 0
+                    for (var key in psi_24) {
+                        if(name == key){
+                           console.log( psi_24[key])
+                           psi_val = psi_24[key]
+                           console.log(psi_val)
+                        }
+                    }
+
+         
+                    var lat = data.region_metadata[item].label_location.latitude
+                    var long =  data.region_metadata[item].label_location.longitude
+                   // var marker = L.marker([lat,long]).addTo(map);
+                
+                    var circle = L.circle([lat,long], {
+                        color: colorScaleAge(psi_val),
+                        fillColor: colorScaleAge(psi_val) ,
+                        fillOpacity: 0.5,
+                        radius: 2500
+                        }).addTo(map);
+                        circle.bindPopup("name: " + name + " " );
+
+                        var test = new L.LatLng(lat, long);
+                        var text = L.tooltip({
+                            permanent: true,
+                            direction: 'center',
+                            className: 'number-icon-default',
+                            opacity: 0.5
+                            
+                        })
+                        .setContent(psi_val.toString())
+                        .setLatLng(test).addTo(map);
+                       // text.addTo(circle);
+                        
+                }
+                
+        
+            
+
+            //For each json object key
+            
+            for (var key in psi_24) {
+                if (environment.hasOwnProperty(key)) {
+                  //  console.log("hello")
+                  //  console.log(key)
+                }
+            }
+            
+      });
+    
+       
+            
+          
+     
+          
+    });
+        
+    
+        
+    </script>
+    <style>
+          .number-icon-default
+        {
+            opacity: 0.1;
+            text-align:center;
+            color:black;   
+            text-shadow: 1px 1px #000000;
+            font-size: large;
+            font-weight: bold;
+        }
+        #map {
+            width: 1000px;
+            height: 600px;
+        }
+    </style>
+    </head>
+    <style>
+        .park {
+        color: black;
+        font-family: 'Ranchers', cursive;
+        font-size: 200%;
+        text-align:center;
+      }
+      
+    
+      </style>
+    
+    <body class="park" >
+        <h1 id="displayDate">Environment</h1>
+        <div class="container">
+            <div id="map"></div>
+        </div>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
+        <script>
+   
+
+        </script>
+    </body>
+    
